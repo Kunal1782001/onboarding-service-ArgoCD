@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.flowable.org/processdef"
+             id="Definitions_1">
+
+    <process id="employeeOnboarding" name="Employee Onboarding Process" isExecutable="true">
+
+        <!-- Start Event -->
+        <startEvent id="StartEvent_1" name="Start Onboarding">
+            <outgoing>Flow_1</outgoing>
+        </startEvent>
+
+        <!-- Stage 1: Application Submission -->
+        <userTask id="ApplicationSubmission" name="Application Submission" flowable:assignee="employee">
+            <documentation>New employee submits onboarding application with required information</documentation>
+            <incoming>Flow_1</incoming>
+            <outgoing>Flow_2</outgoing>
+        </userTask>
+
+        <!-- Stage 2: HR Verification (Parallel Tasks) -->
+        <parallelGateway id="HRVerificationGateway" name="HR Verification Gateway">
+            <incoming>Flow_2</incoming>
+            <outgoing>Flow_3a</outgoing>
+            <outgoing>Flow_3b</outgoing>
+        </parallelGateway>
+
+        <!-- HR Task 1: Document Verification -->
+        <userTask id="DocumentVerification" name="Document Verification" flowable:assignee="hr_admin">
+            <documentation>HR verifies submitted documents (ID, qualification certificates, etc.)</documentation>
+            <incoming>Flow_3a</incoming>
+            <outgoing>Flow_4a</outgoing>
+        </userTask>
+
+        <!-- HR Task 2: Background Check -->
+        <userTask id="BackgroundCheck" name="Background Check" flowable:assignee="hr_admin">
+            <documentation>Conduct background check for new employee</documentation>
+            <incoming>Flow_3b</incoming>
+            <outgoing>Flow_4b</outgoing>
+        </userTask>
+
+        <!-- Merge HR Tasks -->
+        <parallelGateway id="HRMergeGateway" name="HR Merge Gateway">
+            <incoming>Flow_4a</incoming>
+            <incoming>Flow_4b</incoming>
+            <outgoing>Flow_5</outgoing>
+        </parallelGateway>
+
+        <!-- Stage 3: Manager Approval -->
+        <userTask id="ManagerApproval" name="Manager Approval" flowable:assignee="${managerId}">
+            <documentation>Manager approves and assigns department to new employee</documentation>
+            <incoming>Flow_5</incoming>
+            <outgoing>Flow_6</outgoing>
+        </userTask>
+
+        <!-- Stage 4: IT Setup (Parallel Tasks) -->
+        <parallelGateway id="ITSetupGateway" name="IT Setup Gateway">
+            <incoming>Flow_6</incoming>
+            <outgoing>Flow_7a</outgoing>
+            <outgoing>Flow_7b</outgoing>
+            <outgoing>Flow_7c</outgoing>
+        </parallelGateway>
+
+        <!-- IT Task 1: Email Account Creation -->
+        <userTask id="EmailAccountCreation" name="Email Account Creation" flowable:assignee="it_team">
+            <documentation>IT creates email account and assigns it to employee</documentation>
+            <incoming>Flow_7a</incoming>
+            <outgoing>Flow_8a</outgoing>
+        </userTask>
+
+        <!-- IT Task 2: System Access Setup -->
+        <userTask id="SystemAccessSetup" name="System Access Setup" flowable:assignee="it_team">
+            <documentation>IT provides system access and security credentials</documentation>
+            <incoming>Flow_7b</incoming>
+            <outgoing>Flow_8b</outgoing>
+        </userTask>
+
+        <!-- IT Task 3: Hardware Provisioning -->
+        <userTask id="HardwareProvisioning" name="Hardware Provisioning" flowable:assignee="it_team">
+            <documentation>IT provisions hardware (laptop, monitor, etc.)</documentation>
+            <incoming>Flow_7c</incoming>
+            <outgoing>Flow_8c</outgoing>
+        </userTask>
+
+        <!-- Merge IT Tasks -->
+        <parallelGateway id="ITMergeGateway" name="IT Merge Gateway">
+            <incoming>Flow_8a</incoming>
+            <incoming>Flow_8b</incoming>
+            <incoming>Flow_8c</incoming>
+            <outgoing>Flow_9</outgoing>
+        </parallelGateway>
+
+        <!-- Stage 5: Orientation Assignment -->
+        <userTask id="OrientationAssignment" name="Orientation Assignment" flowable:assignee="hr_admin">
+            <documentation>HR assigns orientation program and training schedule</documentation>
+            <incoming>Flow_9</incoming>
+            <outgoing>Flow_10</outgoing>
+        </userTask>
+
+        <!-- Stage 6: Final Confirmation -->
+        <userTask id="FinalConfirmation" name="Final Confirmation" flowable:assignee="employee">
+            <documentation>Employee confirms all onboarding steps completed and accepts terms</documentation>
+            <incoming>Flow_10</incoming>
+            <outgoing>Flow_11</outgoing>
+        </userTask>
+
+        <!-- End Event -->
+        <endEvent id="EndEvent_1" name="Onboarding Complete">
+            <incoming>Flow_11</incoming>
+        </endEvent>
+
+        <!-- Sequence Flows -->
+        <sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="ApplicationSubmission"/>
+        <sequenceFlow id="Flow_2" sourceRef="ApplicationSubmission" targetRef="HRVerificationGateway"/>
+        <sequenceFlow id="Flow_3a" sourceRef="HRVerificationGateway" targetRef="DocumentVerification"/>
+        <sequenceFlow id="Flow_3b" sourceRef="HRVerificationGateway" targetRef="BackgroundCheck"/>
+        <sequenceFlow id="Flow_4a" sourceRef="DocumentVerification" targetRef="HRMergeGateway"/>
+        <sequenceFlow id="Flow_4b" sourceRef="BackgroundCheck" targetRef="HRMergeGateway"/>
+        <sequenceFlow id="Flow_5" sourceRef="HRMergeGateway" targetRef="ManagerApproval"/>
+        <sequenceFlow id="Flow_6" sourceRef="ManagerApproval" targetRef="ITSetupGateway"/>
+        <sequenceFlow id="Flow_7a" sourceRef="ITSetupGateway" targetRef="EmailAccountCreation"/>
+        <sequenceFlow id="Flow_7b" sourceRef="ITSetupGateway" targetRef="SystemAccessSetup"/>
+        <sequenceFlow id="Flow_7c" sourceRef="ITSetupGateway" targetRef="HardwareProvisioning"/>
+        <sequenceFlow id="Flow_8a" sourceRef="EmailAccountCreation" targetRef="ITMergeGateway"/>
+        <sequenceFlow id="Flow_8b" sourceRef="SystemAccessSetup" targetRef="ITMergeGateway"/>
+        <sequenceFlow id="Flow_8c" sourceRef="HardwareProvisioning" targetRef="ITMergeGateway"/>
+        <sequenceFlow id="Flow_9" sourceRef="ITMergeGateway" targetRef="OrientationAssignment"/>
+        <sequenceFlow id="Flow_10" sourceRef="OrientationAssignment" targetRef="FinalConfirmation"/>
+        <sequenceFlow id="Flow_11" sourceRef="FinalConfirmation" targetRef="EndEvent_1"/>
+
+    </process>
+
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="employeeOnboarding">
+
+            <!-- Start / End Events -->
+            <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="BPMNShape_StartEvent_1">
+                <omgdc:Bounds height="30.0" width="30.0" x="35.0" y="225.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="EndEvent_1" id="BPMNShape_EndEvent_1">
+                <omgdc:Bounds height="28.0" width="28.0" x="1556.0" y="226.0"/>
+            </bpmndi:BPMNShape>
+
+            <!-- User Tasks -->
+            <bpmndi:BPMNShape bpmnElement="ApplicationSubmission" id="BPMNShape_ApplicationSubmission">
+                <omgdc:Bounds height="80.0" width="120.0" x="130.0" y="200.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="DocumentVerification" id="BPMNShape_DocumentVerification">
+                <omgdc:Bounds height="80.0" width="120.0" x="410.0" y="110.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="BackgroundCheck" id="BPMNShape_BackgroundCheck">
+                <omgdc:Bounds height="80.0" width="120.0" x="410.0" y="290.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ManagerApproval" id="BPMNShape_ManagerApproval">
+                <omgdc:Bounds height="80.0" width="120.0" x="690.0" y="200.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="EmailAccountCreation" id="BPMNShape_EmailAccountCreation">
+                <omgdc:Bounds height="80.0" width="120.0" x="970.0" y="70.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="SystemAccessSetup" id="BPMNShape_SystemAccessSetup">
+                <omgdc:Bounds height="80.0" width="120.0" x="970.0" y="200.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="HardwareProvisioning" id="BPMNShape_HardwareProvisioning">
+                <omgdc:Bounds height="80.0" width="120.0" x="970.0" y="330.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="OrientationAssignment" id="BPMNShape_OrientationAssignment">
+                <omgdc:Bounds height="80.0" width="120.0" x="1250.0" y="200.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="FinalConfirmation" id="BPMNShape_FinalConfirmation">
+                <omgdc:Bounds height="80.0" width="120.0" x="1390.0" y="200.0"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Gateways -->
+            <bpmndi:BPMNShape bpmnElement="HRVerificationGateway" id="BPMNShape_HRVerificationGateway">
+                <omgdc:Bounds height="40.0" width="40.0" x="310.0" y="220.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="HRMergeGateway" id="BPMNShape_HRMergeGateway">
+                <omgdc:Bounds height="40.0" width="40.0" x="590.0" y="220.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ITSetupGateway" id="BPMNShape_ITSetupGateway">
+                <omgdc:Bounds height="40.0" width="40.0" x="870.0" y="220.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ITMergeGateway" id="BPMNShape_ITMergeGateway">
+                <omgdc:Bounds height="40.0" width="40.0" x="1150.0" y="220.0"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Sequence Flows -->
+            <bpmndi:BPMNEdge bpmnElement="Flow_1" id="BPMNEdge_Flow_1">
+                <omgdi:waypoint x="65.0" y="240.0"/>
+                <omgdi:waypoint x="130.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_2" id="BPMNEdge_Flow_2">
+                <omgdi:waypoint x="250.0" y="240.0"/>
+                <omgdi:waypoint x="310.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_3a" id="BPMNEdge_Flow_3a">
+                <omgdi:waypoint x="330.0" y="220.0"/>
+                <omgdi:waypoint x="330.0" y="150.0"/>
+                <omgdi:waypoint x="410.0" y="150.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_3b" id="BPMNEdge_Flow_3b">
+                <omgdi:waypoint x="330.0" y="260.0"/>
+                <omgdi:waypoint x="330.0" y="330.0"/>
+                <omgdi:waypoint x="410.0" y="330.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_4a" id="BPMNEdge_Flow_4a">
+                <omgdi:waypoint x="530.0" y="150.0"/>
+                <omgdi:waypoint x="610.0" y="150.0"/>
+                <omgdi:waypoint x="610.0" y="220.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_4b" id="BPMNEdge_Flow_4b">
+                <omgdi:waypoint x="530.0" y="330.0"/>
+                <omgdi:waypoint x="610.0" y="330.0"/>
+                <omgdi:waypoint x="610.0" y="260.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_5" id="BPMNEdge_Flow_5">
+                <omgdi:waypoint x="630.0" y="240.0"/>
+                <omgdi:waypoint x="690.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_6" id="BPMNEdge_Flow_6">
+                <omgdi:waypoint x="810.0" y="240.0"/>
+                <omgdi:waypoint x="870.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_7a" id="BPMNEdge_Flow_7a">
+                <omgdi:waypoint x="890.0" y="220.0"/>
+                <omgdi:waypoint x="890.0" y="110.0"/>
+                <omgdi:waypoint x="970.0" y="110.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_7b" id="BPMNEdge_Flow_7b">
+                <omgdi:waypoint x="910.0" y="240.0"/>
+                <omgdi:waypoint x="970.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_7c" id="BPMNEdge_Flow_7c">
+                <omgdi:waypoint x="890.0" y="260.0"/>
+                <omgdi:waypoint x="890.0" y="370.0"/>
+                <omgdi:waypoint x="970.0" y="370.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_8a" id="BPMNEdge_Flow_8a">
+                <omgdi:waypoint x="1090.0" y="110.0"/>
+                <omgdi:waypoint x="1170.0" y="110.0"/>
+                <omgdi:waypoint x="1170.0" y="220.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_8b" id="BPMNEdge_Flow_8b">
+                <omgdi:waypoint x="1090.0" y="240.0"/>
+                <omgdi:waypoint x="1150.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_8c" id="BPMNEdge_Flow_8c">
+                <omgdi:waypoint x="1090.0" y="370.0"/>
+                <omgdi:waypoint x="1170.0" y="370.0"/>
+                <omgdi:waypoint x="1170.0" y="260.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_9" id="BPMNEdge_Flow_9">
+                <omgdi:waypoint x="1190.0" y="240.0"/>
+                <omgdi:waypoint x="1250.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_10" id="BPMNEdge_Flow_10">
+                <omgdi:waypoint x="1370.0" y="240.0"/>
+                <omgdi:waypoint x="1390.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_11" id="BPMNEdge_Flow_11">
+                <omgdi:waypoint x="1510.0" y="240.0"/>
+                <omgdi:waypoint x="1556.0" y="240.0"/>
+            </bpmndi:BPMNEdge>
+
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+
+</definitions>

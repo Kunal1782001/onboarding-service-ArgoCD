@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: employee-onboarding-service
+  profiles:
+    active: dev
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+
+  datasource:
+    url: jdbc:oracle:thin:@45.114.141.87:2601/USITORADB
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: L2L3
+    password: L2L3
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+
+  h2:
+    console:
+      enabled: false
+
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Flowable Configuration
+flowable:
+  database-schema-update: true
+  process-definition-location-prefix: classpath:/bpmn/
+  async-executor-activate: true
+  async-executor-core-pool-size: 2
+  async-executor-max-pool-size: 5
+  async-executor-queue-size: 100
+  rest-api-enabled: true
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  error:
+    include-message: always
+    include-stacktrace: on-param
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.flowable: DEBUG
+    com.flowable.onboarding: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Security Configuration
+app:
+  auth:
+    jwt-secret: "your-secret-key-change-this-in-production-with-a-strong-secret"
+    jwt-expiration-hours: 24
+  upload:
+    base-dir: uploads
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
