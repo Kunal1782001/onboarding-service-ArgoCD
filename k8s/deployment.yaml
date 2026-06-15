@@ -21,7 +21,7 @@ spec:
       containers:
       - name: employee-onboarding-service
 
-        image: bhadekunal/onboarding-service:latest
+        image: bhadekunal/onboarding-service:1
 
         imagePullPolicy: Always
 
